@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 
+from app.api.router import api_router
+from app.core.settings import get_settings
+
+settings = get_settings()
+
 app = FastAPI(
-    title="Music Stems Platform API",
-    description="Scaffolding inicial da API do projeto.",
-    version="0.1.0",
+    title=settings.app_name,
+    description=settings.app_description,
+    version=settings.app_version,
 )
-
-
-@app.get("/health", tags=["infra"])
-def healthcheck() -> dict[str, str]:
-    return {"status": "ok"}
+app.include_router(api_router)

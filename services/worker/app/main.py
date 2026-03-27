@@ -1,11 +1,24 @@
 import logging
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from app.core.settings import get_settings
+from app.metrics import collect_startup_metrics
+
+settings = get_settings()
+
+logging.basicConfig(level=settings.log_level)
+logger = logging.getLogger(settings.worker_name)
 
 
 def main() -> None:
-    logger.info("Worker scaffold carregado. Nenhuma tarefa de negocio foi configurada ainda.")
+    metrics = collect_startup_metrics(settings.worker_name)
+    logger.info(
+        "Worker scaffold carregado",
+        extra={
+            "worker_name": settings.worker_name,
+            "environment": settings.environment,
+            "metrics": metrics,
+        },
+    )
 
 
 if __name__ == "__main__":
