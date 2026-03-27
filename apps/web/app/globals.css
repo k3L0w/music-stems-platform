@@ -1,0 +1,54 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, sans-serif;
+  background: #f5f1e8;
+  color: #1f1c18;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: linear-gradient(180deg, #f5f1e8 0%, #ece3d4 100%);
+}
+
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.card {
+  width: min(640px, 100%);
+  padding: 32px;
+  border-radius: 20px;
+  background: rgba(255, 252, 246, 0.92);
+  border: 1px solid #d8cdbb;
+  box-shadow: 0 20px 60px rgba(83, 58, 24, 0.12);
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #7a5f38;
+}
+
+h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+}
