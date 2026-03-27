@@ -27,8 +27,8 @@ Plataforma web brasileira de separação musical em 6 stems:
 ├── apps/
 │   └── web/          # Next.js + TypeScript
 ├── services/
-│   ├── api/          # FastAPI
-│   └── worker/       # Worker Python
+│   ├── api/          # FastAPI + dominio conceitual inicial
+│   └── worker/       # Worker Python + config basica
 ├── docker-compose.yml
 ├── Makefile
 └── README.md
@@ -42,13 +42,14 @@ Construir um MVP web focado no mercado brasileiro, com:
 - PIX
 
 ## Escopo atual
-Este scaffolding prepara a base do monorepo sem implementar:
+Esta etapa prepara a base tecnica do monorepo sem implementar:
 - billing
 - autenticação
 - processamento de áudio
+- conexão real com banco
 
 ## Pré-requisitos
-- Node.js 20+
+- Node.js 24 LTS
 - npm 10+
 - Python 3.11+
 - Docker + Docker Compose
@@ -74,28 +75,30 @@ Este scaffolding prepara a base do monorepo sem implementar:
    ```bash
    make worker-install
    ```
+6. Copie os ambientes dos serviços:
+   ```bash
+   cp services/api/.env.example services/api/.env
+   cp services/worker/.env.example services/worker/.env
+   ```
 
 ## Executando os serviços
 ### Web
 ```bash
-cd apps/web
-npm run dev
+make web-dev
 ```
 
 ### API
 ```bash
-cd services/api
-cp .env.example .env
-. .venv/bin/activate
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+make api-run
 ```
+
+Rotas iniciais disponíveis:
+- `GET /` retorna metadados básicos da aplicação
+- `GET /health` retorna o status simples da API
 
 ### Worker
 ```bash
-cd services/worker
-cp .env.example .env
-. .venv/bin/activate
-python -m app.main
+make worker-run
 ```
 
 ## Infra local
@@ -108,3 +111,9 @@ Para acompanhar logs ou encerrar os containers:
 make logs
 make down
 ```
+
+## Base preparada para a próxima etapa
+- Configuração da API centralizada em `services/api/app/core/settings.py`
+- Rotas de sistema isoladas em `services/api/app/api/routes/system.py`
+- Modelos conceituais de domínio em `services/api/app/domain/schemas.py`
+- Configuração do worker centralizada em `services/worker/app/core/settings.py`
