@@ -46,7 +46,8 @@ Esta etapa prepara a base tecnica do monorepo sem implementar:
 - billing
 - autenticação
 - processamento de áudio
-- conexão real com banco
+- fila real
+- storage real
 
 ## Pré-requisitos
 - Node.js 24 LTS
@@ -96,6 +97,9 @@ Rotas iniciais disponíveis:
 - `GET /` retorna metadados básicos da aplicação
 - `GET /health` retorna o status simples da API
 
+Documentação automática:
+- `http://localhost:8000/docs`
+
 ### Worker
 ```bash
 make worker-run
@@ -115,5 +119,32 @@ make down
 ## Base preparada para a próxima etapa
 - Configuração da API centralizada em `services/api/app/core/settings.py`
 - Rotas de sistema isoladas em `services/api/app/api/routes/system.py`
-- Modelos conceituais de domínio em `services/api/app/domain/schemas.py`
+- Modelos ORM em `services/api/app/domain/models.py`
+- Schemas de domínio em `services/api/app/domain/schemas.py`
+- Infra de banco em `services/api/app/db/`
+- Alembic configurado em `services/api/alembic/`
 - Configuração do worker centralizada em `services/worker/app/core/settings.py`
+
+## Banco e migrations
+Depois de copiar `services/api/.env.example` para `services/api/.env`, a API passa a usar `DATABASE_URL` com `SQLAlchemy 2.x` e PostgreSQL como alvo principal.
+
+Aplicar a migration inicial:
+```bash
+make api-db-upgrade
+```
+
+Ver estado atual e histórico:
+```bash
+make api-db-current
+make api-db-history
+```
+
+Criar uma nova migration autogerada:
+```bash
+make api-db-revision MESSAGE="descricao_curta"
+```
+
+Voltar a última migration:
+```bash
+make api-db-downgrade
+```

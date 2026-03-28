@@ -1,53 +1,24 @@
 from datetime import datetime
-from enum import StrEnum
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+
+from app.domain.enums import (
+    PlanCode,
+    ProcessingJobStatus,
+    ProjectStatus,
+    StemType,
+    SubscriptionStatus,
+    UserRole,
+)
 
 
-class UserRole(StrEnum):
-    CUSTOMER = "customer"
-    ADMIN = "admin"
+class DomainSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
 
 
-class PlanCode(StrEnum):
-    FREE = "free"
-    SOLO = "solo"
-    PRO = "pro"
-
-
-class SubscriptionStatus(StrEnum):
-    PENDING = "pending"
-    ACTIVE = "active"
-    CANCELED = "canceled"
-
-
-class ProjectStatus(StrEnum):
-    DRAFT = "draft"
-    UPLOADED = "uploaded"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
-    FAILED = "failed"
-
-
-class ProcessingJobStatus(StrEnum):
-    QUEUED = "queued"
-    RUNNING = "running"
-    SUCCEEDED = "succeeded"
-    FAILED = "failed"
-
-
-class StemType(StrEnum):
-    VOCALS = "vocals"
-    DRUMS = "drums"
-    BASS = "bass"
-    GUITAR = "guitar"
-    PIANO = "piano"
-    OTHER = "other"
-
-
-class UserSchema(BaseModel):
+class UserSchema(DomainSchema):
     id: UUID
     email: str
     display_name: str
@@ -55,7 +26,7 @@ class UserSchema(BaseModel):
     created_at: datetime
 
 
-class PlanSchema(BaseModel):
+class PlanSchema(DomainSchema):
     id: UUID
     code: PlanCode
     name: str
@@ -63,7 +34,7 @@ class PlanSchema(BaseModel):
     active: bool = True
 
 
-class SubscriptionSchema(BaseModel):
+class SubscriptionSchema(DomainSchema):
     id: UUID
     user_id: UUID
     plan_id: UUID
@@ -72,7 +43,7 @@ class SubscriptionSchema(BaseModel):
     ends_at: Optional[datetime] = None
 
 
-class ProjectSchema(BaseModel):
+class ProjectSchema(DomainSchema):
     id: UUID
     user_id: UUID
     name: str
@@ -81,7 +52,7 @@ class ProjectSchema(BaseModel):
     created_at: datetime
 
 
-class ProcessingJobSchema(BaseModel):
+class ProcessingJobSchema(DomainSchema):
     id: UUID
     project_id: UUID
     status: ProcessingJobStatus = ProcessingJobStatus.QUEUED
@@ -90,7 +61,7 @@ class ProcessingJobSchema(BaseModel):
     created_at: datetime
 
 
-class GeneratedStemSchema(BaseModel):
+class GeneratedStemSchema(DomainSchema):
     id: UUID
     project_id: UUID
     processing_job_id: UUID
