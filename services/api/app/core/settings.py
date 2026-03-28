@@ -1,6 +1,12 @@
 from dataclasses import dataclass
 from functools import lru_cache
 import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(ENV_FILE)
 
 
 @dataclass(frozen=True)
@@ -12,7 +18,7 @@ class Settings:
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     docs_url: str = "/docs"
-    database_url: str = "postgresql://music_stems:music_stems@localhost:5432/music_stems"
+    database_url: str = "postgresql+psycopg://music_stems:music_stems@localhost:5432/music_stems"
     redis_url: str = "redis://localhost:6379/0"
 
 
