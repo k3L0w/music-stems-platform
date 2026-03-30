@@ -101,6 +101,9 @@ Rotas iniciais disponíveis:
 - `GET /projects/{project_id}` busca um projeto por id
 - `POST /projects` cria um projeto
 - `PATCH /projects/{project_id}` atualiza campos básicos do projeto
+- `POST /projects/{project_id}/jobs` cria um job de processamento
+- `GET /projects/{project_id}/jobs` lista jobs de um projeto
+- `GET /jobs/{job_id}` consulta um job por id
 - `DELETE /projects/{project_id}` remove um projeto
 
 Documentação automática:
@@ -173,6 +176,28 @@ curl -X POST http://localhost:8000/projects \
   -d '{
     "user_id": "00000000-0000-0000-0000-000000000001",
     "name": "Meu primeiro projeto",
-    "source_filename": "musica.wav"
+    "source_filename": "musica.wav",
+    "source_content_type": "audio/wav",
+    "source_size_bytes": 10485760
   }'
+```
+
+Criar job para um projeto:
+```bash
+curl -X POST http://localhost:8000/projects/PROJECT_ID/jobs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "provider": "htdemucs_6s",
+    "requested_stems": ["vocals", "drums", "bass"]
+  }'
+```
+
+Listar jobs de um projeto:
+```bash
+curl http://localhost:8000/projects/PROJECT_ID/jobs
+```
+
+Consultar job por id:
+```bash
+curl http://localhost:8000/jobs/JOB_ID
 ```
