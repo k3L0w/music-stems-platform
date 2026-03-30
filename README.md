@@ -96,6 +96,12 @@ make api-run
 Rotas iniciais disponíveis:
 - `GET /` retorna metadados básicos da aplicação
 - `GET /health` retorna o status simples da API
+- `GET /plans` lista planos cadastrados no banco
+- `GET /projects` lista projetos, com filtro opcional por `user_id`
+- `GET /projects/{project_id}` busca um projeto por id
+- `POST /projects` cria um projeto
+- `PATCH /projects/{project_id}` atualiza campos básicos do projeto
+- `DELETE /projects/{project_id}` remove um projeto
 
 Documentação automática:
 - `http://localhost:8000/docs`
@@ -147,4 +153,26 @@ make api-db-revision MESSAGE="descricao_curta"
 Voltar a última migration:
 ```bash
 make api-db-downgrade
+```
+
+## Uso rápido da API
+Listar planos:
+```bash
+curl http://localhost:8000/plans
+```
+
+Popular planos básicos para teste local:
+```bash
+docker compose exec -T postgres psql -U music_stems -d music_stems < services/api/scripts/seed_plans.sql
+```
+
+Criar projeto:
+```bash
+curl -X POST http://localhost:8000/projects \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": "00000000-0000-0000-0000-000000000001",
+    "name": "Meu primeiro projeto",
+    "source_filename": "musica.wav"
+  }'
 ```
