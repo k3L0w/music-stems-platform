@@ -25,7 +25,12 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     display_name: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="user_role", native_enum=False),
+        Enum(
+            UserRole,
+            name="user_role",
+            native_enum=False,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
         default=UserRole.CUSTOMER,
         server_default=UserRole.CUSTOMER.value,
@@ -45,7 +50,12 @@ class Plan(Base):
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
     code: Mapped[PlanCode] = mapped_column(
-        Enum(PlanCode, name="plan_code", native_enum=False),
+        Enum(
+            PlanCode,
+            name="plan_code",
+            native_enum=False,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
         unique=True,
     )
@@ -73,7 +83,12 @@ class Subscription(Base):
         index=True,
     )
     status: Mapped[SubscriptionStatus] = mapped_column(
-        Enum(SubscriptionStatus, name="subscription_status", native_enum=False),
+        Enum(
+            SubscriptionStatus,
+            name="subscription_status",
+            native_enum=False,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
         default=SubscriptionStatus.PENDING,
         server_default=SubscriptionStatus.PENDING.value,
@@ -98,7 +113,12 @@ class Project(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     source_filename: Mapped[str] = mapped_column(String(255), nullable=False)
     status: Mapped[ProjectStatus] = mapped_column(
-        Enum(ProjectStatus, name="project_status", native_enum=False),
+        Enum(
+            ProjectStatus,
+            name="project_status",
+            native_enum=False,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
         default=ProjectStatus.DRAFT,
         server_default=ProjectStatus.DRAFT.value,
@@ -125,7 +145,12 @@ class ProcessingJob(Base):
         index=True,
     )
     status: Mapped[ProcessingJobStatus] = mapped_column(
-        Enum(ProcessingJobStatus, name="processing_job_status", native_enum=False),
+        Enum(
+            ProcessingJobStatus,
+            name="processing_job_status",
+            native_enum=False,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
         default=ProcessingJobStatus.QUEUED,
         server_default=ProcessingJobStatus.QUEUED.value,
@@ -169,7 +194,12 @@ class GeneratedStem(Base):
         index=True,
     )
     stem_type: Mapped[StemType] = mapped_column(
-        Enum(StemType, name="stem_type", native_enum=False),
+        Enum(
+            StemType,
+            name="stem_type",
+            native_enum=False,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
         nullable=False,
     )
     file_key: Mapped[str] = mapped_column(String(255), nullable=False)
