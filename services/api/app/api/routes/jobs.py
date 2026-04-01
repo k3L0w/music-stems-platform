@@ -3,9 +3,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.schemas.jobs import JobCreateRequest, JobResponse
+from app.api.schemas.jobs import JobCreateRequest, JobResponse, JobStatusUpdateRequest
 from app.db.dependencies import get_db_session
-from app.db.repositories.jobs import create_job, get_job, list_jobs_by_project
+from app.db.repositories.jobs import create_job, get_job, list_jobs_by_project, update_job_status
 from app.db.repositories.projects import get_project
 
 router = APIRouter(tags=["jobs"])
@@ -51,4 +51,18 @@ def read_job(job_id: UUID, session: Session = Depends(get_db_session)) -> JobRes
     if job is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found.")
 
+    return JobResponse.model_validate(job)
+
+
+@router.patch("/jobs/{job_id}/status", response_model=JobResponse)
+def update_job_status_endpoint(
+    job_id: UUID,
+    payload: JobStatusUpdateRequest,
+    session: Session = Depends(get_db_session),
+) -> JobResponse:
+    job = get_job(session=session, job_id=job_id)
+    if job is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found.")
+
+    job = update_job_status(session=session, job=job, status=payload.status)
     return JobResponse.model_validate(job)

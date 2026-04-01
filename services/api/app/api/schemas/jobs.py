@@ -20,3 +20,7 @@ class JobResponse(BaseModel):
 class JobCreateRequest(BaseModel):
     provider: str = Field(default="htdemucs_6s", min_length=1, max_length=120)
     requested_stems: list[StemType] = Field(min_length=1)
+
+
+class JobStatusUpdateRequest(BaseModel):
+    status: ProcessingJobStatus

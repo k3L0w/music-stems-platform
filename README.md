@@ -104,6 +104,9 @@ Rotas iniciais disponíveis:
 - `POST /projects/{project_id}/jobs` cria um job de processamento
 - `GET /projects/{project_id}/jobs` lista jobs de um projeto
 - `GET /jobs/{job_id}` consulta um job por id
+- `PATCH /jobs/{job_id}/status` atualiza manualmente o status de um job
+- `GET /projects/{project_id}/stems` lista stems gerados de um projeto
+- `GET /stems/{stem_id}` consulta um stem por id
 - `DELETE /projects/{project_id}` remove um projeto
 
 Documentação automática:
@@ -200,4 +203,23 @@ curl http://localhost:8000/projects/PROJECT_ID/jobs
 Consultar job por id:
 ```bash
 curl http://localhost:8000/jobs/JOB_ID
+```
+
+Atualizar status de um job:
+```bash
+curl -X PATCH http://localhost:8000/jobs/JOB_ID/status \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "succeeded"
+  }'
+```
+
+Listar stems de um projeto:
+```bash
+curl http://localhost:8000/projects/PROJECT_ID/stems
+```
+
+Consultar stem por id:
+```bash
+curl http://localhost:8000/stems/STEM_ID
 ```
