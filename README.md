@@ -101,6 +101,8 @@ Rotas iniciais disponíveis:
 - `GET /projects/{project_id}` busca um projeto por id
 - `POST /projects` cria um projeto
 - `PATCH /projects/{project_id}` atualiza campos básicos do projeto
+- `POST /projects/{project_id}/upload-target` gera um alvo de upload mockado
+- `POST /projects/{project_id}/upload-complete` confirma upload concluído
 - `POST /projects/{project_id}/jobs` cria um job de processamento
 - `GET /projects/{project_id}/jobs` lista jobs de um projeto
 - `GET /jobs/{job_id}` consulta um job por id
@@ -192,6 +194,23 @@ curl -X POST http://localhost:8000/projects/PROJECT_ID/jobs \
   -d '{
     "provider": "htdemucs_6s",
     "requested_stems": ["vocals", "drums", "bass"]
+  }'
+```
+
+Gerar upload target mockado:
+```bash
+curl -X POST http://localhost:8000/projects/PROJECT_ID/upload-target
+```
+
+Confirmar upload concluído:
+```bash
+curl -X POST http://localhost:8000/projects/PROJECT_ID/upload-complete \
+  -H "Content-Type: application/json" \
+  -d '{
+    "object_key": "projects/PROJECT_ID/source/musica.wav",
+    "source_filename": "musica.wav",
+    "source_content_type": "audio/wav",
+    "source_size_bytes": 10485760
   }'
 ```
 

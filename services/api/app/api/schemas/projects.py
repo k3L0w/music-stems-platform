@@ -13,6 +13,7 @@ class ProjectResponse(BaseModel):
     user_id: UUID
     name: str
     source_filename: str
+    source_object_key: str | None
     source_content_type: str | None
     source_size_bytes: int | None
     status: ProjectStatus

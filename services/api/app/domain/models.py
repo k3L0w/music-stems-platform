@@ -112,6 +112,7 @@ class Project(Base):
     )
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     source_filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    source_object_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     source_content_type: Mapped[str | None] = mapped_column(String(255), nullable=True)
     source_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
     status: Mapped[ProjectStatus] = mapped_column(
