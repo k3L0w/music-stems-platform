@@ -48,6 +48,7 @@ class ProjectSchema(DomainSchema):
     user_id: UUID
     name: str
     source_filename: str
+    source_object_key: Optional[str] = None
     source_content_type: Optional[str] = None
     source_size_bytes: Optional[int] = None
     status: ProjectStatus = ProjectStatus.DRAFT

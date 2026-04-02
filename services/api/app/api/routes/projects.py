@@ -8,8 +8,11 @@ from app.api.schemas.projects import (
     ProjectResponse,
     ProjectUpdateRequest,
 )
+from app.api.schemas.uploads import UploadCompleteRequest, UploadTargetResponse
 from app.db.dependencies import get_db_session
 from app.db.repositories.projects import (
+    build_upload_target,
+    confirm_project_upload,
     create_project,
     delete_project,
     get_project,
@@ -36,6 +39,39 @@ def read_project(project_id: UUID, session: Session = Depends(get_db_session)) -
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
 
+    return ProjectResponse.model_validate(project)
+
+
+@router.post("/{project_id}/upload-target", response_model=UploadTargetResponse)
+def create_upload_target(
+    project_id: UUID,
+    session: Session = Depends(get_db_session),
+) -> UploadTargetResponse:
+    project = get_project(session=session, project_id=project_id)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
+
+    return UploadTargetResponse.model_validate(build_upload_target(project))
+
+
+@router.post("/{project_id}/upload-complete", response_model=ProjectResponse)
+def complete_project_upload(
+    project_id: UUID,
+    payload: UploadCompleteRequest,
+    session: Session = Depends(get_db_session),
+) -> ProjectResponse:
+    project = get_project(session=session, project_id=project_id)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
+
+    project = confirm_project_upload(
+        session=session,
+        project=project,
+        object_key=payload.object_key,
+        source_filename=payload.source_filename,
+        source_content_type=payload.source_content_type,
+        source_size_bytes=payload.source_size_bytes,
+    )
     return ProjectResponse.model_validate(project)
 
 
