@@ -88,6 +88,11 @@ Esta etapa prepara a base tecnica do monorepo sem implementar:
 make web-dev
 ```
 
+Para conectar o web local na API local, use a URL padrao `http://127.0.0.1:8000` ou defina:
+```bash
+export NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+```
+
 ### API
 ```bash
 make api-run
@@ -242,3 +247,15 @@ Consultar stem por id:
 ```bash
 curl http://localhost:8000/stems/STEM_ID
 ```
+
+## Uso rapido do web
+Com a API rodando em `http://127.0.0.1:8000`, abra o front em `http://localhost:3000`.
+
+Fluxo principal disponivel pela interface:
+- listar projetos
+- criar projeto
+- gerar upload target mockado
+- confirmar upload completo
+- criar job
+- atualizar status de job
+- visualizar stems do projeto
