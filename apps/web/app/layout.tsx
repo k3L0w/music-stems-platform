@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Music Stems Platform",
-  description: "Scaffolding inicial da plataforma de separacao musical."
+  description: "MVP web conectado a API da plataforma de separacao musical."
 };
 
 type RootLayoutProps = {
