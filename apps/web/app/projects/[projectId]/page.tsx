@@ -4,7 +4,12 @@ import { notFound } from "next/navigation";
 import { ProjectActions } from "@/app/components/project-actions";
 import { ProjectJobs } from "@/app/components/project-jobs";
 import { ProjectStems } from "@/app/components/project-stems";
-import { fetchProject, fetchProjectJobs, fetchProjectStems } from "@/lib/api";
+import {
+  fetchProject,
+  fetchProjectDownloadTargets,
+  fetchProjectJobs,
+  fetchProjectStems
+} from "@/lib/api";
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -16,10 +21,11 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const { projectId } = await params;
 
   try {
-    const [project, jobs, stems] = await Promise.all([
+    const [project, jobs, stems, downloadTargets] = await Promise.all([
       fetchProject(projectId),
       fetchProjectJobs(projectId),
-      fetchProjectStems(projectId)
+      fetchProjectStems(projectId),
+      fetchProjectDownloadTargets(projectId)
     ]);
 
     return (
@@ -75,7 +81,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
 
         <ProjectActions project={project} />
         <ProjectJobs projectId={project.id} jobs={jobs} />
-        <ProjectStems stems={stems} />
+        <ProjectStems stems={stems} downloadTargets={downloadTargets} />
       </main>
     );
   } catch (error) {

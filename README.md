@@ -114,6 +114,8 @@ Rotas iniciais disponíveis:
 - `PATCH /jobs/{job_id}/status` atualiza manualmente o status de um job
 - `GET /projects/{project_id}/stems` lista stems gerados de um projeto
 - `GET /stems/{stem_id}` consulta um stem por id
+- `POST /stems/{stem_id}/download-target` gera um download target mockado para um stem
+- `GET /projects/{project_id}/download-targets` lista download targets mockados dos stems do projeto
 - `DELETE /projects/{project_id}` remove um projeto
 
 Documentação automática:
@@ -131,6 +133,8 @@ Configuracoes locais uteis em `services/worker/.env`:
 WORKER_POLLING_INTERVAL_SECONDS=2
 WORKER_PROCESSING_DELAY_SECONDS=3
 ```
+
+Na tela de detalhe do projeto, os stems gerados passam a exibir links mockados de download retornados pela API.
 
 ## Infra local
 O `docker-compose.yml` sobe apenas a infraestrutura compartilhada neste momento:
@@ -213,6 +217,16 @@ curl -X POST http://localhost:8000/projects/PROJECT_ID/jobs \
 Gerar upload target mockado:
 ```bash
 curl -X POST http://localhost:8000/projects/PROJECT_ID/upload-target
+```
+
+Gerar download target mockado de um stem:
+```bash
+curl -X POST http://localhost:8000/stems/STEM_ID/download-target
+```
+
+Listar download targets mockados de um projeto:
+```bash
+curl http://localhost:8000/projects/PROJECT_ID/download-targets
 ```
 
 Confirmar upload concluído:

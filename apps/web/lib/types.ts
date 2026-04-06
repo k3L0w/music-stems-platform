@@ -42,3 +42,12 @@ export type UploadTarget = {
   upload_headers: Record<string, string>;
   expires_in_seconds: number;
 };
+
+export type StemDownloadTarget = {
+  stem_id: string;
+  stem_type: StemType;
+  file_key: string;
+  download_url: string;
+  download_method: string;
+  expires_in_seconds: number;
+};
