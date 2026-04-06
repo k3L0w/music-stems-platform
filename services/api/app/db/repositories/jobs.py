@@ -3,8 +3,9 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.domain.enums import ProcessingJobStatus, ProjectStatus, StemType
-from app.domain.models import GeneratedStem, ProcessingJob
+from app.domain.enums import ProcessingJobStatus
+from app.domain.job_processing import transition_job_status
+from app.domain.models import ProcessingJob
 
 
 def list_jobs_by_project(session: Session, project_id: UUID) -> list[ProcessingJob]:
@@ -33,44 +34,12 @@ def update_job_status(
     job: ProcessingJob,
     status: ProcessingJobStatus,
 ) -> ProcessingJob:
-    job.status = status
-
-    project = job.project
-    if status == ProcessingJobStatus.QUEUED:
-        project.status = ProjectStatus.UPLOADED
-    elif status == ProcessingJobStatus.RUNNING:
-        project.status = ProjectStatus.PROCESSING
-    elif status == ProcessingJobStatus.SUCCEEDED:
-        project.status = ProjectStatus.COMPLETED
-        _create_missing_placeholder_stems(session=session, job=job)
-    elif status == ProcessingJobStatus.FAILED:
-        project.status = ProjectStatus.FAILED
-
-    session.add(project)
-    session.add(job)
-    session.commit()
+    transition_job_status(
+        session=session,
+        job_id=job.id,
+        project_id=job.project_id,
+        requested_stems=job.requested_stems,
+        status=status.value,
+    )
     session.refresh(job)
     return job
-
-
-def _create_missing_placeholder_stems(session: Session, job: ProcessingJob) -> None:
-    existing_stem_types = {
-        stem_type
-        for stem_type in session.scalars(
-            select(GeneratedStem.stem_type).where(GeneratedStem.processing_job_id == job.id)
-        )
-    }
-
-    for requested_stem in job.requested_stems:
-        stem_type = StemType(requested_stem)
-        if stem_type in existing_stem_types:
-            continue
-
-        session.add(
-            GeneratedStem(
-                project_id=job.project_id,
-                processing_job_id=job.id,
-                stem_type=stem_type,
-                file_key=f"projects/{job.project_id}/jobs/{job.id}/{stem_type.value}.wav",
-            )
-        )

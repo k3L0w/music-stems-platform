@@ -124,6 +124,14 @@ Documentação automática:
 make worker-run
 ```
 
+O worker agora roda em loop simples, busca jobs com status `queued` no banco e faz a transicao automatica para `running` e depois `succeeded`, gerando stems placeholder ao final.
+
+Configuracoes locais uteis em `services/worker/.env`:
+```bash
+WORKER_POLLING_INTERVAL_SECONDS=2
+WORKER_PROCESSING_DELAY_SECONDS=3
+```
+
 ## Infra local
 O `docker-compose.yml` sobe apenas a infraestrutura compartilhada neste momento:
 - PostgreSQL em `localhost:5432`
