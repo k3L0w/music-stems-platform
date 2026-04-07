@@ -8,8 +8,16 @@ import {
   fetchProject,
   fetchProjectDownloadTargets,
   fetchProjectJobs,
-  fetchProjectStems
+  fetchProjectStems,
+  fetchUsers
 } from "@/lib/api";
+import type { PlanCode } from "@/lib/types";
+
+const planLimitsByCode: Record<PlanCode, { stemsPerJob: number; activeJobs: number }> = {
+  free: { stemsPerJob: 2, activeJobs: 1 },
+  solo: { stemsPerJob: 4, activeJobs: 2 },
+  pro: { stemsPerJob: 6, activeJobs: 5 }
+};
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -21,12 +29,16 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const { projectId } = await params;
 
   try {
-    const [project, jobs, stems, downloadTargets] = await Promise.all([
+    const [project, jobs, stems, downloadTargets, users] = await Promise.all([
       fetchProject(projectId),
       fetchProjectJobs(projectId),
       fetchProjectStems(projectId),
-      fetchProjectDownloadTargets(projectId)
+      fetchProjectDownloadTargets(projectId),
+      fetchUsers()
     ]);
+    const projectUser = users.find((user) => user.id === project.user_id) ?? null;
+    const activePlanCode = projectUser?.active_plan_code ?? "free";
+    const planLimits = planLimitsByCode[activePlanCode];
 
     return (
       <main className="shell">
@@ -74,7 +86,17 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
             </div>
             <div>
               <span className="detail-label">Usuario</span>
-              <p className="mono">{project.user_id}</p>
+              <p>{projectUser ? `${projectUser.display_name} (${projectUser.email})` : project.user_id}</p>
+            </div>
+            <div>
+              <span className="detail-label">Plano ativo</span>
+              <p>{activePlanCode}</p>
+            </div>
+            <div>
+              <span className="detail-label">Limites do plano</span>
+              <p>
+                Ate {planLimits.stemsPerJob} stems por job e ate {planLimits.activeJobs} jobs ativos
+              </p>
             </div>
           </div>
         </section>

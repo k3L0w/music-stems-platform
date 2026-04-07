@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 import { CreateProjectForm } from "@/app/components/create-project-form";
-import { fetchProjects } from "@/lib/api";
+import { fetchProjects, fetchUsers } from "@/lib/api";
 
 export default async function HomePage() {
-  const projects = await fetchProjects();
+  const [projects, users] = await Promise.all([fetchProjects(), fetchUsers()]);
 
   return (
     <main className="shell">
@@ -25,7 +25,7 @@ export default async function HomePage() {
             <h2>Novo projeto</h2>
           </div>
         </div>
-        <CreateProjectForm />
+        <CreateProjectForm users={users} />
       </section>
 
       <section className="panel stack">

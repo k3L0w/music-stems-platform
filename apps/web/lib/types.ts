@@ -4,6 +4,10 @@ export type ProcessingJobStatus = "queued" | "running" | "succeeded" | "failed";
 
 export type StemType = "vocals" | "drums" | "bass" | "guitar" | "piano" | "other";
 
+export type PlanCode = "free" | "solo" | "pro";
+
+export type UserRole = "customer" | "admin";
+
 export type Project = {
   id: string;
   user_id: string;
@@ -50,4 +54,12 @@ export type StemDownloadTarget = {
   download_url: string;
   download_method: string;
   expires_in_seconds: number;
+};
+
+export type UserSummary = {
+  id: string;
+  email: string;
+  display_name: string;
+  role: UserRole;
+  active_plan_code: PlanCode;
 };
