@@ -136,6 +136,13 @@ WORKER_PROCESSING_DELAY_SECONDS=3
 
 Na tela de detalhe do projeto, os stems gerados passam a exibir links mockados de download retornados pela API.
 
+Criacao de jobs agora respeita limites basicos por plano:
+- `free`: ate 2 stems por job e ate 1 job ativo por vez
+- `solo`: ate 4 stems por job e ate 2 jobs ativos por vez
+- `pro`: ate 6 stems por job e ate 5 jobs ativos por vez
+
+Para esse MVP, job ativo significa status `queued` ou `running`. Quando um limite de plano e excedido, a API responde com `409 Conflict` e mensagem clara.
+
 ## Infra local
 O `docker-compose.yml` sobe apenas a infraestrutura compartilhada neste momento:
 - PostgreSQL em `localhost:5432`
