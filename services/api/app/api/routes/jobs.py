@@ -5,8 +5,16 @@ from sqlalchemy.orm import Session
 
 from app.api.schemas.jobs import JobCreateRequest, JobResponse, JobStatusUpdateRequest
 from app.db.dependencies import get_db_session
-from app.db.repositories.jobs import create_job, get_job, list_jobs_by_project, update_job_status
+from app.db.repositories.jobs import (
+    count_active_jobs_by_user,
+    create_job,
+    get_job,
+    list_jobs_by_project,
+    update_job_status,
+)
+from app.db.repositories.plans import get_user_plan_code
 from app.db.repositories.projects import get_project
+from app.domain.plan_rules import PlanEligibilityError, validate_job_creation_for_plan
 
 router = APIRouter(tags=["jobs"])
 
@@ -20,6 +28,18 @@ def create_job_endpoint(
     project = get_project(session=session, project_id=project_id)
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
+
+    plan_code = get_user_plan_code(session=session, user_id=project.user_id)
+    active_jobs_count = count_active_jobs_by_user(session=session, user_id=project.user_id)
+
+    try:
+        validate_job_creation_for_plan(
+            plan_code=plan_code,
+            requested_stems_count=len(payload.requested_stems),
+            active_jobs_count=active_jobs_count,
+        )
+    except PlanEligibilityError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
     job = create_job(
         session=session,

@@ -1,11 +1,11 @@
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.domain.enums import ProcessingJobStatus
 from app.domain.job_processing import transition_job_status
-from app.domain.models import ProcessingJob
+from app.domain.models import ProcessingJob, Project
 
 
 def list_jobs_by_project(session: Session, project_id: UUID) -> list[ProcessingJob]:
@@ -27,6 +27,16 @@ def create_job(session: Session, data: dict[str, object]) -> ProcessingJob:
     session.commit()
     session.refresh(job)
     return job
+
+
+def count_active_jobs_by_user(session: Session, user_id: UUID) -> int:
+    statement = (
+        select(func.count(ProcessingJob.id))
+        .join(Project, Project.id == ProcessingJob.project_id)
+        .where(Project.user_id == user_id)
+        .where(ProcessingJob.status.in_([ProcessingJobStatus.QUEUED, ProcessingJobStatus.RUNNING]))
+    )
+    return session.scalar(statement) or 0
 
 
 def update_job_status(
