@@ -2,6 +2,7 @@ import type {
   GeneratedStem,
   ProcessingJob,
   Project,
+  ProjectTimelineEvent,
   StemDownloadTarget,
   UserSummary
 } from "./types";
@@ -64,6 +65,10 @@ export async function fetchProjectDownloadTargets(projectId: string): Promise<St
 
 export async function fetchUsers(): Promise<UserSummary[]> {
   return apiFetch<UserSummary[]>("/users");
+}
+
+export async function fetchProjectTimeline(projectId: string): Promise<ProjectTimelineEvent[]> {
+  return apiFetch<ProjectTimelineEvent[]>(`/projects/${projectId}/timeline`);
 }
 
 export { apiBaseUrl };

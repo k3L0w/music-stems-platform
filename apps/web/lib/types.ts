@@ -63,3 +63,12 @@ export type UserSummary = {
   role: UserRole;
   active_plan_code: PlanCode;
 };
+
+export type ProjectTimelineEvent = {
+  type: string;
+  timestamp: string;
+  title: string;
+  description: string;
+  job_id?: string | null;
+  stem_id?: string | null;
+};
