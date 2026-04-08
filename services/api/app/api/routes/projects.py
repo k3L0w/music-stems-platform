@@ -8,8 +8,10 @@ from app.api.schemas.projects import (
     ProjectResponse,
     ProjectUpdateRequest,
 )
+from app.api.schemas.timeline import ProjectTimelineEventResponse
 from app.api.schemas.uploads import UploadCompleteRequest, UploadTargetResponse
 from app.db.dependencies import get_db_session
+from app.db.repositories.jobs import list_jobs_by_project
 from app.db.repositories.projects import (
     build_upload_target,
     confirm_project_upload,
@@ -19,6 +21,8 @@ from app.db.repositories.projects import (
     list_projects,
     update_project,
 )
+from app.db.repositories.stems import list_stems_by_project
+from app.domain.project_timeline import build_project_timeline
 from app.domain.models import User
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -40,6 +44,23 @@ def read_project(project_id: UUID, session: Session = Depends(get_db_session)) -
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
 
     return ProjectResponse.model_validate(project)
+
+
+@router.get("/{project_id}/timeline", response_model=list[ProjectTimelineEventResponse])
+def read_project_timeline(
+    project_id: UUID,
+    session: Session = Depends(get_db_session),
+) -> list[ProjectTimelineEventResponse]:
+    project = get_project(session=session, project_id=project_id)
+    if project is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
+
+    timeline = build_project_timeline(
+        project=project,
+        jobs=list_jobs_by_project(session=session, project_id=project.id),
+        stems=list_stems_by_project(session=session, project_id=project.id),
+    )
+    return [ProjectTimelineEventResponse.model_validate(event) for event in timeline]
 
 
 @router.post("/{project_id}/upload-target", response_model=UploadTargetResponse)

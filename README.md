@@ -105,6 +105,7 @@ Rotas iniciais disponíveis:
 - `GET /users` lista usuarios disponiveis no MVP com plano ativo
 - `GET /projects` lista projetos, com filtro opcional por `user_id`
 - `GET /projects/{project_id}` busca um projeto por id
+- `GET /projects/{project_id}/timeline` lista eventos cronológicos do projeto
 - `POST /projects` cria um projeto
 - `PATCH /projects/{project_id}` atualiza campos básicos do projeto
 - `POST /projects/{project_id}/upload-target` gera um alvo de upload mockado
@@ -137,6 +138,7 @@ WORKER_PROCESSING_DELAY_SECONDS=3
 
 Na tela de detalhe do projeto, os stems gerados passam a exibir links mockados de download retornados pela API.
 O formulario web de criacao de projeto agora usa selecao de usuario e mostra o plano ativo escolhido.
+O detalhe do projeto agora inclui uma timeline simples montada a partir de projeto, jobs e stems ja existentes.
 
 Criacao de jobs agora respeita limites basicos por plano:
 - `free`: ate 2 stems por job e ate 1 job ativo por vez
@@ -216,6 +218,11 @@ curl -X POST http://localhost:8000/projects \
     "source_content_type": "audio/wav",
     "source_size_bytes": 10485760
   }'
+```
+
+Consultar timeline de um projeto:
+```bash
+curl http://localhost:8000/projects/PROJECT_ID/timeline
 ```
 
 Criar job para um projeto:

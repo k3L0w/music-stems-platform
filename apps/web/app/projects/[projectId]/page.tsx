@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { ProjectActions } from "@/app/components/project-actions";
 import { ProjectJobs } from "@/app/components/project-jobs";
 import { ProjectStems } from "@/app/components/project-stems";
+import { ProjectTimeline } from "@/app/components/project-timeline";
 import {
   fetchProject,
   fetchProjectDownloadTargets,
   fetchProjectJobs,
   fetchProjectStems,
+  fetchProjectTimeline,
   fetchUsers
 } from "@/lib/api";
 import type { PlanCode } from "@/lib/types";
@@ -29,11 +31,12 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
   const { projectId } = await params;
 
   try {
-    const [project, jobs, stems, downloadTargets, users] = await Promise.all([
+    const [project, jobs, stems, downloadTargets, timeline, users] = await Promise.all([
       fetchProject(projectId),
       fetchProjectJobs(projectId),
       fetchProjectStems(projectId),
       fetchProjectDownloadTargets(projectId),
+      fetchProjectTimeline(projectId),
       fetchUsers()
     ]);
     const projectUser = users.find((user) => user.id === project.user_id) ?? null;
@@ -102,6 +105,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
         </section>
 
         <ProjectActions project={project} />
+        <ProjectTimeline events={timeline} />
         <ProjectJobs projectId={project.id} jobs={jobs} />
         <ProjectStems stems={stems} downloadTargets={downloadTargets} />
       </main>
