@@ -4,13 +4,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { apiBaseUrl } from "@/lib/api";
+import type { UserSummary } from "@/lib/types";
 
-const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001";
+type CreateProjectFormProps = {
+  users: UserSummary[];
+};
 
-export function CreateProjectForm() {
+export function CreateProjectForm({ users }: CreateProjectFormProps) {
   const router = useRouter();
+  const defaultUserId = users[0]?.id ?? "";
   const [formData, setFormData] = useState({
-    userId: DEFAULT_USER_ID,
+    userId: defaultUserId,
     name: "",
     sourceFilename: "",
     sourceContentType: "audio/wav",
@@ -45,7 +49,7 @@ export function CreateProjectForm() {
       }
 
       setFormData({
-        userId: DEFAULT_USER_ID,
+        userId: defaultUserId,
         name: "",
         sourceFilename: "",
         sourceContentType: "audio/wav",
@@ -59,17 +63,27 @@ export function CreateProjectForm() {
     }
   }
 
+  const selectedUser = users.find((user) => user.id === formData.userId) ?? null;
+
   return (
     <form className="stack" onSubmit={handleSubmit}>
       <div className="field-grid">
         <label className="field">
           <span>Usuario</span>
-          <input
+          <select
             name="userId"
             value={formData.userId}
             onChange={(event) => setFormData((current) => ({ ...current, userId: event.target.value }))}
             required
-          />
+            disabled={users.length === 0}
+          >
+            {users.length === 0 ? <option value="">Nenhum usuario disponivel</option> : null}
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.display_name} ({user.email})
+              </option>
+            ))}
+          </select>
         </label>
 
         <label className="field">
@@ -123,8 +137,15 @@ export function CreateProjectForm() {
         </label>
       </div>
 
+      {selectedUser ? (
+        <p className="muted">
+          Plano ativo: <strong>{selectedUser.active_plan_code}</strong> | Perfil:{" "}
+          <strong>{selectedUser.role}</strong>
+        </p>
+      ) : null}
+
       <div className="actions">
-        <button type="submit" disabled={isSubmitting}>
+        <button type="submit" disabled={isSubmitting || users.length === 0 || !formData.userId}>
           {isSubmitting ? "Criando..." : "Criar projeto"}
         </button>
       </div>

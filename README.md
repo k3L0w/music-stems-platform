@@ -102,6 +102,7 @@ Rotas iniciais disponíveis:
 - `GET /` retorna metadados básicos da aplicação
 - `GET /health` retorna o status simples da API
 - `GET /plans` lista planos cadastrados no banco
+- `GET /users` lista usuarios disponiveis no MVP com plano ativo
 - `GET /projects` lista projetos, com filtro opcional por `user_id`
 - `GET /projects/{project_id}` busca um projeto por id
 - `POST /projects` cria um projeto
@@ -135,6 +136,7 @@ WORKER_PROCESSING_DELAY_SECONDS=3
 ```
 
 Na tela de detalhe do projeto, os stems gerados passam a exibir links mockados de download retornados pela API.
+O formulario web de criacao de projeto agora usa selecao de usuario e mostra o plano ativo escolhido.
 
 Criacao de jobs agora respeita limites basicos por plano:
 - `free`: ate 2 stems por job e ate 1 job ativo por vez
@@ -191,6 +193,11 @@ make api-db-downgrade
 Listar planos:
 ```bash
 curl http://localhost:8000/plans
+```
+
+Listar usuarios disponiveis no MVP:
+```bash
+curl http://localhost:8000/users
 ```
 
 Popular planos básicos para teste local:

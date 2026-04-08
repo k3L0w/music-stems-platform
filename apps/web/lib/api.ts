@@ -1,4 +1,10 @@
-import type { GeneratedStem, ProcessingJob, Project, StemDownloadTarget } from "./types";
+import type {
+  GeneratedStem,
+  ProcessingJob,
+  Project,
+  StemDownloadTarget,
+  UserSummary
+} from "./types";
 
 const apiBaseUrl =
   process.env.API_BASE_URL ??
@@ -54,6 +60,10 @@ export async function fetchProjectStems(projectId: string): Promise<GeneratedSte
 
 export async function fetchProjectDownloadTargets(projectId: string): Promise<StemDownloadTarget[]> {
   return apiFetch<StemDownloadTarget[]>(`/projects/${projectId}/download-targets`);
+}
+
+export async function fetchUsers(): Promise<UserSummary[]> {
+  return apiFetch<UserSummary[]>("/users");
 }
 
 export { apiBaseUrl };
