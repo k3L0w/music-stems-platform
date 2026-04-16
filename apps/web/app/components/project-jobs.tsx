@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { apiBaseUrl } from "@/lib/api";
+import { apiBaseUrl, getApiErrorMessage, parseApiError } from "@/lib/api";
 import type { ProcessingJob, ProcessingJobStatus, StemType } from "@/lib/types";
 
 type ProjectJobsProps = {
@@ -14,6 +14,17 @@ type ProjectJobsProps = {
 const availableStems: StemType[] = ["vocals", "drums", "bass", "guitar", "piano", "other"];
 const statusOptions: ProcessingJobStatus[] = ["running", "succeeded", "failed"];
 
+function formatTimestamp(timestamp: string | null): string {
+  if (!timestamp) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short"
+  }).format(new Date(timestamp));
+}
+
 export function ProjectJobs({ projectId, jobs }: ProjectJobsProps) {
   const router = useRouter();
   const [provider, setProvider] = useState("htdemucs_6s");
@@ -22,6 +33,21 @@ export function ProjectJobs({ projectId, jobs }: ProjectJobsProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isCreatingJob, setIsCreatingJob] = useState(false);
   const [updatingJobId, setUpdatingJobId] = useState<string | null>(null);
+  const hasRunningJob = jobs.some((job) => job.status === "running");
+
+  useEffect(() => {
+    if (!hasRunningJob) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      router.refresh();
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [hasRunningJob, router]);
 
   function toggleStem(stem: StemType) {
     setSelectedStems((current) =>
@@ -48,8 +74,9 @@ export function ProjectJobs({ projectId, jobs }: ProjectJobsProps) {
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
-        throw new Error(payload?.detail ?? "Nao foi possivel criar o job.");
+        const payload = await parseApiError(response);
+        setErrorMessage(getApiErrorMessage(payload, "Nao foi possivel criar o job."));
+        return;
       }
 
       setSuccessMessage("Job criado com sucesso.");
@@ -76,8 +103,9 @@ export function ProjectJobs({ projectId, jobs }: ProjectJobsProps) {
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
-        throw new Error(payload?.detail ?? "Nao foi possivel atualizar o status do job.");
+        const payload = await parseApiError(response);
+        setErrorMessage(getApiErrorMessage(payload, "Nao foi possivel atualizar o status do job."));
+        return;
       }
 
       setSuccessMessage(`Job atualizado para ${status}.`);
@@ -99,6 +127,8 @@ export function ProjectJobs({ projectId, jobs }: ProjectJobsProps) {
           <h2>Jobs do projeto</h2>
         </div>
       </div>
+
+      {hasRunningJob ? <p className="muted">Atualizando automaticamente a cada 5 segundos.</p> : null}
 
       <form className="stack" onSubmit={handleCreateJob}>
         <div className="field-grid">
@@ -146,6 +176,10 @@ export function ProjectJobs({ projectId, jobs }: ProjectJobsProps) {
               </div>
 
               <p className="muted">Stems: {job.requested_stems.join(", ")}</p>
+              <p className="muted">Status: {job.status}</p>
+              <p className="muted">Criado em: {formatTimestamp(job.created_at)}</p>
+              <p className="muted">Iniciado em: {formatTimestamp(job.started_at)}</p>
+              <p className="muted">Finalizado em: {formatTimestamp(job.finished_at)}</p>
 
               <div className="actions">
                 {statusOptions.map((status) => (

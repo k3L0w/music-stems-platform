@@ -1,9 +1,16 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app.api.schemas.jobs import JobCreateRequest, JobResponse, JobStatusUpdateRequest
+from app.api.schemas.jobs import (
+    JobCreateErrorCode,
+    JobCreateErrorResponse,
+    JobCreateRequest,
+    JobResponse,
+    JobStatusUpdateRequest,
+)
 from app.db.dependencies import get_db_session
 from app.db.repositories.jobs import (
     count_active_jobs_by_user,
@@ -19,12 +26,22 @@ from app.domain.plan_rules import PlanEligibilityError, validate_job_creation_fo
 router = APIRouter(tags=["jobs"])
 
 
-@router.post("/projects/{project_id}/jobs", response_model=JobResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/projects/{project_id}/jobs",
+    response_model=JobResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        status.HTTP_409_CONFLICT: {
+            "model": JobCreateErrorResponse,
+            "description": "Job creation rejected by plan limits.",
+        }
+    },
+)
 def create_job_endpoint(
     project_id: UUID,
     payload: JobCreateRequest,
     session: Session = Depends(get_db_session),
-) -> JobResponse:
+) -> JobResponse | JSONResponse:
     project = get_project(session=session, project_id=project_id)
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
@@ -39,7 +56,14 @@ def create_job_endpoint(
             active_jobs_count=active_jobs_count,
         )
     except PlanEligibilityError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+        error_payload = JobCreateErrorResponse(
+            error=JobCreateErrorCode.PLAN_LIMIT_EXCEEDED,
+            message=str(exc),
+        )
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
+            content=error_payload.model_dump(mode="json"),
+        )
 
     job = create_job(
         session=session,

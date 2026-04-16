@@ -27,6 +27,8 @@ export type ProcessingJob = {
   requested_stems: StemType[];
   status: ProcessingJobStatus;
   created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
 };
 
 export type GeneratedStem = {

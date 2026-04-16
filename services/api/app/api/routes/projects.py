@@ -22,7 +22,7 @@ from app.db.repositories.projects import (
     update_project,
 )
 from app.db.repositories.stems import list_stems_by_project
-from app.domain.project_timeline import build_project_timeline
+from app.domain.project_timeline import load_project_timeline
 from app.domain.models import User
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -55,10 +55,10 @@ def read_project_timeline(
     if project is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found.")
 
-    timeline = build_project_timeline(
+    timeline = load_project_timeline(
         project=project,
-        jobs=list_jobs_by_project(session=session, project_id=project.id),
-        stems=list_stems_by_project(session=session, project_id=project.id),
+        jobs_loader=lambda: list_jobs_by_project(session=session, project_id=project.id),
+        stems_loader=lambda: list_stems_by_project(session=session, project_id=project.id),
     )
     return [ProjectTimelineEventResponse.model_validate(event) for event in timeline]
 

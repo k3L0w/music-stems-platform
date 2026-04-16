@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { apiBaseUrl } from "@/lib/api";
+import { apiBaseUrl, getApiErrorMessage, parseApiError } from "@/lib/api";
 import type { Project, UploadTarget } from "@/lib/types";
 
 type ProjectActionsProps = {
@@ -33,11 +33,16 @@ export function ProjectActions({ project }: ProjectActionsProps) {
       const response = await fetch(`${apiBaseUrl}/projects/${project.id}/upload-target`, {
         method: "POST"
       });
-      const payload = (await response.json().catch(() => null)) as UploadTarget | { detail?: string } | null;
       if (!response.ok) {
-        throw new Error(
-          payload && "detail" in payload ? payload.detail ?? "Falha ao gerar upload target." : "Falha ao gerar upload target."
-        );
+        const payload = await parseApiError(response);
+        setErrorMessage(getApiErrorMessage(payload, "Falha ao gerar upload target."));
+        return;
+      }
+
+      const payload = (await response.json().catch(() => null)) as UploadTarget | null;
+      if (!payload) {
+        setErrorMessage("Falha ao gerar upload target.");
+        return;
       }
 
       const target = payload as UploadTarget;
@@ -75,8 +80,9 @@ export function ProjectActions({ project }: ProjectActionsProps) {
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
-        throw new Error(payload?.detail ?? "Nao foi possivel confirmar o upload.");
+        const payload = await parseApiError(response);
+        setErrorMessage(getApiErrorMessage(payload, "Nao foi possivel confirmar o upload."));
+        return;
       }
 
       setSuccessMessage("Upload confirmado com sucesso.");

@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -15,6 +16,17 @@ class JobResponse(BaseModel):
     requested_stems: list[StemType]
     status: ProcessingJobStatus
     created_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
+
+
+class JobCreateErrorCode(StrEnum):
+    PLAN_LIMIT_EXCEEDED = "plan_limit_exceeded"
+
+
+class JobCreateErrorResponse(BaseModel):
+    error: JobCreateErrorCode
+    message: str
 
 
 class JobCreateRequest(BaseModel):
