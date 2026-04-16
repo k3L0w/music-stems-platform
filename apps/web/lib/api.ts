@@ -7,68 +7,143 @@ import type {
   UserSummary
 } from "./types";
 
+type ApiErrorResponse = {
+  error: string;
+  message: string;
+  status: number;
+};
+
+type ApiResult<T> = {
+  data: T | null;
+  error: string | null;
+  message: string | null;
+  status: number | null;
+};
+
 const apiBaseUrl =
   process.env.API_BASE_URL ??
   process.env.NEXT_PUBLIC_API_BASE_URL ??
   "http://127.0.0.1:8000";
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {})
-    },
-    cache: "no-store"
-  });
+async function parseApiErrorResponse(response: Response): Promise<ApiErrorResponse> {
+  const fallbackMessage = `API request failed with status ${response.status}.`;
 
-  if (!response.ok) {
-    const message = await readErrorMessage(response);
-    throw new Error(`HTTP ${response.status}: ${message}`);
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return (await response.json()) as T;
-}
-
-async function readErrorMessage(response: Response): Promise<string> {
   try {
-    const data = (await response.json()) as { detail?: string };
-    return data.detail ?? `API request failed with status ${response.status}.`;
-  } catch {
-    return `API request failed with status ${response.status}.`;
+    const payload = (await response.json()) as {
+      error?: string;
+      message?: string;
+      detail?: string;
+    };
+
+    return {
+      error: payload.error ?? "api_error",
+      message: payload.message ?? payload.detail ?? fallbackMessage,
+      status: response.status
+    };
+  } catch (error) {
+    return {
+      error: "api_error",
+      message: fallbackMessage,
+      status: response.status
+    };
   }
 }
 
-export async function fetchProjects(): Promise<Project[]> {
-  return apiFetch<Project[]>("/projects");
+export async function parseApiError(response: Response): Promise<ApiErrorResponse> {
+  return parseApiErrorResponse(response);
 }
 
-export async function fetchProject(projectId: string): Promise<Project> {
-  return apiFetch<Project>(`/projects/${projectId}`);
+export function getApiErrorMessage(
+  payload: { message?: string | null; detail?: string | null } | null,
+  fallback: string
+): string {
+  return payload?.message ?? payload?.detail ?? fallback;
 }
 
-export async function fetchProjectJobs(projectId: string): Promise<ProcessingJob[]> {
-  return apiFetch<ProcessingJob[]>(`/projects/${projectId}/jobs`);
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
+  try {
+    const response = await fetch(`${apiBaseUrl}${path}`, {
+      ...init,
+      headers: {
+        "Content-Type": "application/json",
+        ...(init?.headers ?? {})
+      },
+      cache: "no-store"
+    });
+
+    if (response.status >= 400) {
+      const apiError = await parseApiErrorResponse(response);
+      console.error("API ERROR", apiError);
+      return {
+        data: null,
+        error: apiError.error,
+        message: apiError.message,
+        status: apiError.status
+      };
+    }
+
+    if (response.status === 204) {
+      return {
+        data: undefined as T,
+        error: null,
+        message: null,
+        status: response.status
+      };
+    }
+
+    return {
+      data: (await response.json()) as T,
+      error: null,
+      message: null,
+      status: response.status
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unexpected API failure.";
+    console.error("API ERROR", { error: "network_error", message, status: null });
+    return {
+      data: null,
+      error: "network_error",
+      message,
+      status: null
+    };
+  }
 }
 
-export async function fetchProjectStems(projectId: string): Promise<GeneratedStem[]> {
-  return apiFetch<GeneratedStem[]>(`/projects/${projectId}/stems`);
+export async function fetchProjects(): Promise<Project[] | null> {
+  const result = await apiFetch<Project[]>("/projects");
+  return result.data;
 }
 
-export async function fetchProjectDownloadTargets(projectId: string): Promise<StemDownloadTarget[]> {
-  return apiFetch<StemDownloadTarget[]>(`/projects/${projectId}/download-targets`);
+export async function fetchProject(projectId: string): Promise<Project | null> {
+  const result = await apiFetch<Project>(`/projects/${projectId}`);
+  return result.data;
 }
 
-export async function fetchUsers(): Promise<UserSummary[]> {
-  return apiFetch<UserSummary[]>("/users");
+export async function fetchProjectJobs(projectId: string): Promise<ProcessingJob[] | null> {
+  const result = await apiFetch<ProcessingJob[]>(`/projects/${projectId}/jobs`);
+  return result.data;
 }
 
-export async function fetchProjectTimeline(projectId: string): Promise<ProjectTimelineEvent[]> {
-  return apiFetch<ProjectTimelineEvent[]>(`/projects/${projectId}/timeline`);
+export async function fetchProjectStems(projectId: string): Promise<GeneratedStem[] | null> {
+  const result = await apiFetch<GeneratedStem[]>(`/projects/${projectId}/stems`);
+  return result.data;
+}
+
+export async function fetchProjectDownloadTargets(
+  projectId: string
+): Promise<StemDownloadTarget[] | null> {
+  const result = await apiFetch<StemDownloadTarget[]>(`/projects/${projectId}/download-targets`);
+  return result.data;
+}
+
+export async function fetchUsers(): Promise<UserSummary[] | null> {
+  const result = await apiFetch<UserSummary[]>("/users");
+  return result.data;
+}
+
+export async function fetchProjectTimeline(projectId: string): Promise<ProjectTimelineEvent[] | null> {
+  const result = await apiFetch<ProjectTimelineEvent[]>(`/projects/${projectId}/timeline`);
+  return result.data;
 }
 
 export { apiBaseUrl };

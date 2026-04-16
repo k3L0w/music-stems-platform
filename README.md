@@ -136,6 +136,11 @@ WORKER_POLLING_INTERVAL_SECONDS=2
 WORKER_PROCESSING_DELAY_SECONDS=3
 ```
 
+Os jobs agora expõem timestamps reais de processamento:
+- `created_at`: criacao do job
+- `started_at`: entrada real em `running`
+- `finished_at`: entrada real em `succeeded` ou `failed`
+
 Na tela de detalhe do projeto, os stems gerados passam a exibir links mockados de download retornados pela API.
 O formulario web de criacao de projeto agora usa selecao de usuario e mostra o plano ativo escolhido.
 O detalhe do projeto agora inclui uma timeline simples montada a partir de projeto, jobs e stems ja existentes.

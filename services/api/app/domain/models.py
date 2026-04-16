@@ -175,6 +175,8 @@ class ProcessingJob(Base):
         nullable=False,
         server_default=func.now(),
     )
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
     project: Mapped["Project"] = relationship(back_populates="processing_jobs")
     generated_stems: Mapped[list["GeneratedStem"]] = relationship(back_populates="processing_job")

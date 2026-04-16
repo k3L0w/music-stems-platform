@@ -5,6 +5,8 @@ import { fetchProjects, fetchUsers } from "@/lib/api";
 
 export default async function HomePage() {
   const [projects, users] = await Promise.all([fetchProjects(), fetchUsers()]);
+  const safeProjects = projects || [];
+  const safeUsers = users || [];
 
   return (
     <main className="shell">
@@ -25,7 +27,8 @@ export default async function HomePage() {
             <h2>Novo projeto</h2>
           </div>
         </div>
-        <CreateProjectForm users={users} />
+        {!users ? <p className="error-text">Erro ao carregar usuarios.</p> : null}
+        <CreateProjectForm users={safeUsers} />
       </section>
 
       <section className="panel stack">
@@ -36,11 +39,13 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {projects.length === 0 ? (
+        {!projects ? (
+          <p className="error-text">Erro ao carregar projetos.</p>
+        ) : safeProjects.length === 0 ? (
           <p className="muted">Nenhum projeto encontrado na API.</p>
         ) : (
           <div className="stack">
-            {projects.map((project) => (
+            {safeProjects.map((project) => (
               <article key={project.id} className="list-card">
                 <div className="inline-between">
                   <div>

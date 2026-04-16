@@ -30,7 +30,23 @@ def transition_job_status(
         text(
             """
             UPDATE processing_jobs
-            SET status = :status
+            SET
+                status = :status,
+                started_at = CASE
+                    WHEN :status = 'queued' THEN NULL
+                    WHEN :status = 'running' THEN COALESCE(started_at, NOW())
+                    ELSE started_at
+                END,
+                finished_at = CASE
+                    WHEN :status = 'queued' THEN NULL
+                    WHEN :status = 'running' THEN NULL
+                    WHEN :status IN ('succeeded', 'failed') THEN
+                        CASE
+                            WHEN status = :status AND finished_at IS NOT NULL THEN finished_at
+                            ELSE NOW()
+                        END
+                    ELSE finished_at
+                END
             WHERE id = :job_id
             """
         ),

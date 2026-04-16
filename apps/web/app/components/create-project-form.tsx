@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { apiBaseUrl } from "@/lib/api";
+import { apiBaseUrl, getApiErrorMessage, parseApiError } from "@/lib/api";
 import type { UserSummary } from "@/lib/types";
 
 type CreateProjectFormProps = {
@@ -44,8 +44,9 @@ export function CreateProjectForm({ users }: CreateProjectFormProps) {
       });
 
       if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { detail?: string } | null;
-        throw new Error(payload?.detail ?? "Nao foi possivel criar o projeto.");
+        const payload = await parseApiError(response);
+        setErrorMessage(getApiErrorMessage(payload, "Nao foi possivel criar o projeto."));
+        return;
       }
 
       setFormData({
